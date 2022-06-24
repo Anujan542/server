@@ -99,40 +99,40 @@ app.post(
 //   console.log(sizeInBytes);
 // };
 
-const renderVideo = async (req, res) => {
-  const { bucketName, renderId } = await renderVideoOnLambda({
-    region: "us-east-1",
-    functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
-    composition: "HelloWorld",
-    framesPerLambda: 20,
-    serveUrl:
-      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/eiwlgz4vx4/index.html",
-    inputProps: {},
-    codec: "h264-mkv",
-    imageFormat: "jpeg",
-    maxRetries: 1,
-    privacy: "public",
-  });
+// const renderVideo = async (req, res) => {
+//   const { bucketName, renderId } = await renderVideoOnLambda({
+//     region: "us-east-1",
+//     functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
+//     composition: "HelloWorld",
+//     framesPerLambda: 20,
+//     serveUrl:
+//       "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/eiwlgz4vx4/index.html",
+//     inputProps: {},
+//     codec: "h264-mkv",
+//     imageFormat: "jpeg",
+//     maxRetries: 1,
+//     privacy: "public",
+//   });
 
-  console.log(bucketName); //remotionlambda-mym3rl12bp
-  console.log(renderId); //32b9hr05kg
-  // const { outputPath, sizeInBytes } = await downloadMedia({
-  //   bucketName: "remotionlambda-mym3rl12bp",remotionlambda-mym3rl12bp
-  //   region: "us-east-1",
-  //   renderId: "74b4bpgtni",
-  //   outPath: `${Test}`, //`${path.join(os.homedir(), "Desktop")}\\out.mp4`, //"out.mp4",
-  //   onProgress: ({ totalSize, downloaded, progress }) => {
-  //     console.log(
-  //       `Download progress: ${totalSize}/${downloaded} bytes (${(
-  //         progress * 100
-  //       ).toFixed(0)}%)`
-  //     );
-  //   },
-  // });
+//   console.log(bucketName); //remotionlambda-mym3rl12bp
+//   console.log(renderId); //32b9hr05kg
+//   // const { outputPath, sizeInBytes } = await downloadMedia({
+//   //   bucketName: "remotionlambda-mym3rl12bp",remotionlambda-mym3rl12bp
+//   //   region: "us-east-1",
+//   //   renderId: "74b4bpgtni",
+//   //   outPath: `${Test}`, //`${path.join(os.homedir(), "Desktop")}\\out.mp4`, //"out.mp4",
+//   //   onProgress: ({ totalSize, downloaded, progress }) => {
+//   //     console.log(
+//   //       `Download progress: ${totalSize}/${downloaded} bytes (${(
+//   //         progress * 100
+//   //       ).toFixed(0)}%)`
+//   //     );
+//   //   },
+//   // });
 
-  // console.log(outputPath); // "/Users/yourname/remotion-project/out.mp4"
-  // console.log(sizeInBytes);
-};
+//   // console.log(outputPath); // "/Users/yourname/remotion-project/out.mp4"
+//   // console.log(sizeInBytes);
+// };
 
 // app.get("/render", renderVideo);
 
