@@ -31,6 +31,25 @@ app.get(
   })
 );
 
+app.get("/download", async function (req, res) {
+  const { outputPath, sizeInBytes } = await downloadMedia({
+    bucketName: "remotionlambda-mym3rl12bp",
+    region: "us-east-1",
+    renderId: "ghhtbekokc",
+    outPath: "out.mp4",
+    onProgress: ({ totalSize, downloaded, progress }) => {
+      console.log(
+        `Download progress: ${totalSize}/${downloaded} bytes (${(
+          progress * 100
+        ).toFixed(0)}%)`
+      );
+    },
+  });
+
+  console.log(outputPath); // "/Users/yourname/remotion-project/out.mp4"
+  console.log(sizeInBytes);
+});
+
 app.post(
   "/api/addDetails",
   expressAsyncHandler(async (req, res) => {
@@ -61,24 +80,24 @@ app.post(
   })
 );
 
-const downloadVideo = async (req, res) => {
-  const { outputPath, sizeInBytes } = await downloadMedia({
-    bucketName: "remotionlambda-mym3rl12bp",
-    region: "us-east-1",
-    renderId: "ghhtbekokc",
-    outPath: "out.mp4",
-    onProgress: ({ totalSize, downloaded, progress }) => {
-      console.log(
-        `Download progress: ${totalSize}/${downloaded} bytes (${(
-          progress * 100
-        ).toFixed(0)}%)`
-      );
-    },
-  });
+// const downloadVideo = async (req, res) => {
+//   const { outputPath, sizeInBytes } = await downloadMedia({
+//     bucketName: "remotionlambda-mym3rl12bp",
+//     region: "us-east-1",
+//     renderId: "ghhtbekokc",
+//     outPath: "out.mp4",
+//     onProgress: ({ totalSize, downloaded, progress }) => {
+//       console.log(
+//         `Download progress: ${totalSize}/${downloaded} bytes (${(
+//           progress * 100
+//         ).toFixed(0)}%)`
+//       );
+//     },
+//   });
 
-  console.log(outputPath); // "/Users/yourname/remotion-project/out.mp4"
-  console.log(sizeInBytes);
-};
+//   console.log(outputPath); // "/Users/yourname/remotion-project/out.mp4"
+//   console.log(sizeInBytes);
+// };
 
 const renderVideo = async (req, res) => {
   const { bucketName, renderId } = await renderVideoOnLambda({
@@ -115,8 +134,7 @@ const renderVideo = async (req, res) => {
   // console.log(sizeInBytes);
 };
 
-app.get("/download", downloadVideo);
-app.get("/render", renderVideo);
+// app.get("/render", renderVideo);
 
 if (process.env.NODE_ENV === "production") {
   app.use("/", express.static("client/build"));
