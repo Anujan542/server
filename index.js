@@ -4,8 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const expressAsyncHandler = require("express-async-handler");
-const os = require("os");
-const path = require("path");
+const timeout = require("connect-timeout");
 const {
   downloadMedia,
   renderVideoOnLambda,
@@ -35,62 +34,43 @@ app.get(
   })
 );
 
-app.get("/render", async function (req, res) {
+app.get("/render", timeout("120s"), async function (req, res) {
   const { bucketName, renderId } = await renderVideoOnLambda({
     region: "us-east-1",
     functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
     composition: "HelloWorld",
     framesPerLambda: 20,
     serveUrl:
-      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/eiwlgz4vx4/index.html",
+      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/xo2ta8z5t0/index.html",
     inputProps: {},
     codec: "h264-mkv",
     imageFormat: "jpeg",
     maxRetries: 1,
     privacy: "public",
   });
+  console.log(bucketName, renderId);
   while (true) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
     const progress = await getRenderProgress({
       renderId: `${renderId}`,
       bucketName: `${bucketName}`,
       functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
       region: "us-east-1",
     });
+
     if (progress.done) {
       console.log("Render finished!", progress.outputFile);
-      res.status(200).json({ message: progress.outputFile });
-      process.exit(0);
+      res.status(200).json({
+        success: true,
+        data: progress.outputFile,
+        cost: progress.costs.displayCost,
+      });
     }
     if (progress.fatalErrorEncountered) {
       console.error("Error enountered", progress.errors);
-      process.exit(1);
     }
   }
 });
-
-// app.get("/download/:filename", async (req, res) => {
-//   const filename = req.params.filename;
-//   let x = await s3.getObject({ Bucket: BUCKET, Key: filename }).promise();
-//   res.send(x.Body);
-// });
-
-// app.get("/download", async function (req, res) {
-//   const { outputPath, sizeInBytes } = await downloadMedia({
-//     bucketName: "remotionlambda-mym3rl12bp",
-//     region: "us-east-1",
-//     renderId: "ghhtbekokc",
-//     outPath: "./test/pop.mp4",
-//     onProgress: ({ progress }) => {
-//       console.log(`(${(progress * 100).toFixed(0)}%)`);
-//       // return progress;
-//     },
-//   });
-
-//   // console.log(progress);
-//   console.log(outputPath); // "/Users/yourname/remotion-project/out.mp4"
-//   console.log(sizeInBytes);
-// });
 
 app.post(
   "/api/addDetails",
