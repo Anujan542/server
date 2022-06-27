@@ -60,7 +60,7 @@ app.get("/render", async function (req, res) {
 
     if (progress.done) {
       console.log("Render finished!", progress.outputFile);
-      console.log(progress.overallProgress);
+
       res.status(200).json({
         success: true,
         data: progress.outputFile,
@@ -76,6 +76,20 @@ app.get("/render", async function (req, res) {
 app.post(
   "/api/addDetails",
   expressAsyncHandler(async (req, res) => {
+    const { renderId } = await renderVideoOnLambda({
+      region: "us-east-1",
+      functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
+      composition: "HelloWorld",
+      framesPerLambda: 20,
+      serveUrl:
+        "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/xo2ta8z5t0/index.html",
+      inputProps: {},
+      codec: "h264-mkv",
+      imageFormat: "jpeg",
+      maxRetries: 1,
+      privacy: "public",
+    });
+
     const remotion = new Remotion({
       awardImage: req.body.awardImage,
       logo: req.body.logo,
@@ -91,6 +105,7 @@ app.post(
       studentLastName: req.body.studentLastName,
       studentPosition: req.body.studentPosition,
       studentShirtNumber: req.body.studentShirtNumber,
+      renderId: renderId,
     });
 
     await remotion.save();

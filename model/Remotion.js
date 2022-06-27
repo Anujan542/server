@@ -44,6 +44,9 @@ const RemotionSchema = new mongoose.Schema(
     studentShirtNumber: {
       type: String,
     },
+    renderId: {
+      type: String,
+    },
   },
   {
     timestamps: true,
