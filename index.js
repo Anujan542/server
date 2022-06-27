@@ -4,7 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const expressAsyncHandler = require("express-async-handler");
-const timeout = require("connect-timeout");
+
 const {
   downloadMedia,
   renderVideoOnLambda,
@@ -34,7 +34,7 @@ app.get(
   })
 );
 
-app.get("/render", timeout("120s"), async function (req, res) {
+app.get("/render", async function (req, res) {
   const { bucketName, renderId } = await renderVideoOnLambda({
     region: "us-east-1",
     functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
@@ -60,6 +60,7 @@ app.get("/render", timeout("120s"), async function (req, res) {
 
     if (progress.done) {
       console.log("Render finished!", progress.outputFile);
+      console.log(progress.overallProgress);
       res.status(200).json({
         success: true,
         data: progress.outputFile,
@@ -102,18 +103,13 @@ app.post(
   })
 );
 
-function haltOnTimedout(req, res, next) {
-  if (!req.timedout) next();
-}
-
 if (process.env.NODE_ENV === "production") {
-  app.use("/", express.static("client/build"));
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, "client/build/index.html"));
+  app.get("/", (req, res) => {
+    res.send("API is running....");
   });
 } else {
   app.get("/", (req, res) => {
-    res.send("API is running....");
+    res.send("Not Running....");
   });
 }
 
