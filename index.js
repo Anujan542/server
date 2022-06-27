@@ -4,7 +4,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const expressAsyncHandler = require("express-async-handler");
-
+const os = require("os");
+const path = require("path");
 const {
   downloadMedia,
   renderVideoOnLambda,
@@ -57,7 +58,6 @@ app.get("/render", async function (req, res) {
       functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
       region: "us-east-1",
     });
-
     if (progress.done) {
       console.log("Render finished!", progress.outputFile);
       res.status(200).json({
@@ -65,9 +65,11 @@ app.get("/render", async function (req, res) {
         data: progress.outputFile,
         cost: progress.costs.displayCost,
       });
+      process.exit(0);
     }
     if (progress.fatalErrorEncountered) {
       console.error("Error enountered", progress.errors);
+      process.exit(1);
     }
   }
 });
@@ -103,12 +105,13 @@ app.post(
 );
 
 if (process.env.NODE_ENV === "production") {
-  app.get("/", (req, res) => {
-    res.send("API is running....");
+  app.use("/", express.static("client/build"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "client/build/index.html"));
   });
 } else {
   app.get("/", (req, res) => {
-    res.send("Not Running....");
+    res.send("API is running....");
   });
 }
 
