@@ -29,6 +29,9 @@ const RemotionSchema = new mongoose.Schema(
     coachVideo: {
       type: String,
     },
+    coachAudio: {
+      type: String,
+    },
     sideImage: {
       type: String,
     },

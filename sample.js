@@ -44,46 +44,75 @@ app.get("/render", async function (req, res) {
     framesPerLambda: 20,
     // serveUrl:
     //   "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/xo2ta8z5t0/index.html",
-    // serveUrl:
-    //   "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/5t86l3ycin/index.html",
     serveUrl:
-      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/bph9214wq8/index.html",
+      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/5t86l3ycin/index.html",
     inputProps: {},
     codec: "h264-mkv",
     imageFormat: "jpeg",
     maxRetries: 1,
     privacy: "public",
   });
-  console.log(bucketName, renderId);
-  while (true) {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    const progress = await getRenderProgress({
-      renderId: `${renderId}`,
-      bucketName: `${bucketName}`,
-      functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
-      region: "us-east-1",
+
+  return bucketName, renderId;
+  // console.log(bucketName, renderId);
+  // while (true) {
+  //   await new Promise((resolve) => setTimeout(resolve, 3000));
+  //   const progress = await getRenderProgress({
+  //     renderId: `${renderId}`,
+  //     bucketName: `${bucketName}`,
+  //     functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
+  //     region: "us-east-1",
+  //   });
+
+  //   console.log((progress.overallProgress * 100).toFixed(0));
+
+  //   if (progress.done) {
+  //     console.log("Render finished!", progress.outputFile);
+  //     res.status(200).json({
+  //       success: true,
+  //       data: progress.outputFile,
+  //       cost: progress.costs.displayCost,
+  //     });
+  //     process.exit(0);
+  //   }
+  //   if (progress.fatalErrorEncountered) {
+  //     console.error("Error enountered", progress.errors);
+  //     process.exit(1);
+  //   }
+  //   // res.status(200).json({
+  //   //   success: true,
+  //   //   data: { progress: (progress.overallProgress * 100).toFixed(0) },
+  //   // });
+  // }
+});
+
+app.get("/render/progress", async function (req, res) {
+  const progress = await getRenderProgress({
+    renderId: `${renderId}`,
+    bucketName: `${bucketName}`,
+    functionName: "remotion-render-2022-06-14-mem2048mb-disk512mb-120sec",
+    region: "us-east-1",
+  });
+
+  console.log((progress.overallProgress * 100).toFixed(0));
+
+  if (progress.done) {
+    console.log("Render finished!", progress.outputFile);
+    res.status(200).json({
+      success: true,
+      data: progress.outputFile,
+      cost: progress.costs.displayCost,
     });
-
-    console.log((progress.overallProgress * 100).toFixed(0));
-
-    if (progress.done) {
-      console.log("Render finished!", progress.outputFile);
-      res.status(200).json({
-        success: true,
-        data: progress.outputFile,
-        cost: progress.costs.displayCost,
-      });
-      process.exit(0);
-    }
-    if (progress.fatalErrorEncountered) {
-      console.error("Error enountered", progress.errors);
-      process.exit(1);
-    }
-    // res.status(200).json({
-    //   success: true,
-    //   data: { progress: (progress.overallProgress * 100).toFixed(0) },
-    // });
+    process.exit(0);
   }
+  if (progress.fatalErrorEncountered) {
+    console.error("Error enountered", progress.errors);
+    process.exit(1);
+  }
+  res.status(200).json({
+    success: true,
+    data: { progress: (progress.overallProgress * 100).toFixed(0) },
+  });
 });
 
 app.post(
@@ -99,7 +128,6 @@ app.post(
       awardTitle: req.body.awardTitle,
       coachName: req.body.coachName,
       coachVideo: req.body.coachVideo,
-      coachAudio: req.body.coachAudio,
       sideImage: req.body.sideImage,
       studentFirstName: req.body.studentFirstName,
       studentLastName: req.body.studentLastName,
