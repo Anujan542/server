@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@remotion/lambda": "^3.2.40",
+    "@remotion/lambda": "^3.3.1",
     "colors": "^1.4.0",
     "connect-timeout": "^1.9.0",
     "cors": "^2.8.5",

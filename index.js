@@ -26,13 +26,13 @@ app.use(cors());
 app.get("/render", async function (req, res) {
   const { bucketName, renderId, cloudWatchLogs } = await renderMediaOnLambda({
     region: "us-east-1",
-    functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-850sec",
+    functionName: "remotion-render-3-3-1-mem2048mb-disk2048mb-900sec",
     composition: "HelloWorld",
     framesPerLambda: null,
     serveUrl:
       "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/classicMain/index.html",
     inputProps: { id: "7e4e730a-b28d-4be5-b357-298708ad6e7f" },
-    timeoutInMilliseconds: 1000000,
+    timeoutInMilliseconds: 1100000,
     codec: "h264",
     imageFormat: "jpeg",
     maxRetries: 1,
@@ -41,7 +41,7 @@ app.get("/render", async function (req, res) {
 
   const { estimatedPrice, url, sizeInBytes } = await renderStillOnLambda({
     region: "us-east-1",
-    functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-850sec",
+    functionName: "remotion-render-3-3-1-mem2048mb-disk2048mb-900sec",
     serveUrl:
       "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/classicMain/index.html",
     composition: "HelloWorld",
@@ -60,7 +60,7 @@ app.get("/render", async function (req, res) {
     const progress = await getRenderProgress({
       renderId: `${renderId}`,
       bucketName: `${bucketName}`,
-      functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-850sec",
+      functionName: "remotion-render-3-3-1-mem2048mb-disk2048mb-900sec",
       region: "us-east-1",
     });
 
@@ -75,8 +75,14 @@ app.get("/render", async function (req, res) {
       );
       res.status(200).json({
         success: true,
-        data: progress.outputFile,
-        cost: progress.costs.displayCost,
+        VideoUrl: progress.outputFile,
+        Videocost: `$${progress.costs.displayCost}`,
+        thumnailUrl: url,
+        thumnailCost: estimatedPrice.accruedSoFar,
+        TotalCost: `$${
+          progress.costs.displayCost + estimatedPrice.accruedSoFar
+        }`,
+        TotalRenderTimeInMinutes: Math.floor(progress.timeToFinish / 60000),
       });
       process.exit(0);
     }
