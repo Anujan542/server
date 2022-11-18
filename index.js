@@ -7,9 +7,9 @@ const expressAsyncHandler = require("express-async-handler");
 const os = require("os");
 const path = require("path");
 const {
-  downloadMedia,
-  renderVideoOnLambda,
+  renderMediaOnLambda,
   getRenderProgress,
+  renderStillOnLambda,
 } = require("@remotion/lambda");
 
 //model
@@ -24,27 +24,43 @@ app.use(express.json());
 app.use(cors());
 
 app.get("/render", async function (req, res) {
-  const { bucketName, renderId } = await renderVideoOnLambda({
+  const { bucketName, renderId, cloudWatchLogs } = await renderMediaOnLambda({
     region: "us-east-1",
-    functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-120sec",
+    functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-850sec",
     composition: "HelloWorld",
-    framesPerLambda: 20,
+    framesPerLambda: null,
     serveUrl:
-      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/my21/index.html",
-    inputProps: { id: "64ea388b-9a77-45f7-9f7c-037337944ac3" },
-    codec: "h264-mkv",
+      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/classicMain/index.html",
+    inputProps: { id: "7e4e730a-b28d-4be5-b357-298708ad6e7f" },
+    timeoutInMilliseconds: 1000000,
+    codec: "h264",
     imageFormat: "jpeg",
     maxRetries: 1,
     privacy: "public",
   });
 
-  console.log(bucketName, renderId);
+  const { estimatedPrice, url, sizeInBytes } = await renderStillOnLambda({
+    region: "us-east-1",
+    functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-850sec",
+    serveUrl:
+      "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/classicMain/index.html",
+    composition: "HelloWorld",
+    inputProps: { id: "7e4e730a-b28d-4be5-b357-298708ad6e7f" },
+    imageFormat: "png",
+    maxRetries: 1,
+    privacy: "public",
+    envVariables: {},
+    frame: 106,
+  });
+
+  console.log("video on lambda", bucketName, renderId, cloudWatchLogs);
+  console.log("video on lambda", estimatedPrice, url, sizeInBytes);
   while (true) {
     await new Promise((resolve) => setTimeout(resolve, 3000));
     const progress = await getRenderProgress({
       renderId: `${renderId}`,
       bucketName: `${bucketName}`,
-      functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-120sec",
+      functionName: "remotion-render-3-2-40-mem2048mb-disk2048mb-850sec",
       region: "us-east-1",
     });
 
@@ -52,6 +68,11 @@ app.get("/render", async function (req, res) {
 
     if (progress.done) {
       console.log("Render finished!", progress.outputFile);
+      console.log("Total Amount!", `$${progress.costs.displayCost}`);
+      console.log(
+        "Total Render Time in Minutes",
+        Math.floor(progress.timeToFinish / 60000)
+      );
       res.status(200).json({
         success: true,
         data: progress.outputFile,
@@ -65,8 +86,6 @@ app.get("/render", async function (req, res) {
     }
   }
 });
-
-
 
 if (process.env.NODE_ENV === "production") {
   app.get("/", (req, res) => {
