@@ -2,10 +2,8 @@ const express = require("express");
 const colors = require("colors");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const connectDB = require("./config/db");
-const expressAsyncHandler = require("express-async-handler");
-const os = require("os");
-const path = require("path");
+const axios = require("axios");
+
 const {
   renderMediaOnLambda,
   getRenderProgress,
@@ -24,6 +22,12 @@ app.use(express.json());
 app.use(cors());
 
 app.get("/render", async function (req, res) {
+  const eventId = req.query.eventId;
+
+  const { data } = await axios.get(
+    `https://clipping-platform-api-staging.azurewebsites.net/producer/remotion-preview/${eventId}`
+  );
+
   //<----- Render Video On Lambda ---->
   const { bucketName, renderId, cloudWatchLogs } = await renderMediaOnLambda({
     region: "us-east-1",
@@ -32,14 +36,14 @@ app.get("/render", async function (req, res) {
     framesPerLambda: null,
     serveUrl:
       "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/classicMain/index.html",
-    inputProps: { id: "7e4e730a-b28d-4be5-b357-298708ad6e7f" },
+    inputProps: { id: eventId },
     timeoutInMilliseconds: 1100000,
     codec: "h264",
     imageFormat: "jpeg",
     maxRetries: 1,
     privacy: "public",
     outName: {
-      key: "7e4e730a-b28d-4be5-b357-298708ad6e7f/sample1.mp4",
+      key: `${eventId}/${(Math.random() + 1).toString(36).substring(7)}.mp4`,
       bucketName: "remotionlambda-mym3rl12bp",
     },
   });
@@ -51,14 +55,14 @@ app.get("/render", async function (req, res) {
     serveUrl:
       "https://remotionlambda-mym3rl12bp.s3.us-east-1.amazonaws.com/sites/classicMain/index.html",
     composition: "HelloWorld",
-    inputProps: { id: "7e4e730a-b28d-4be5-b357-298708ad6e7f" },
+    inputProps: { id: eventId },
     imageFormat: "jpeg",
     maxRetries: 1,
     privacy: "public",
     envVariables: {},
-    frame: 106,
+    frame: data.remotionPreviewData.thumnailTime,
     outName: {
-      key: "7e4e730a-b28d-4be5-b357-298708ad6e7f/sample1.jpeg",
+      key: `${eventId}/sample6.jpeg`,
       bucketName: "remotionlambda-mym3rl12bp",
     },
   });
